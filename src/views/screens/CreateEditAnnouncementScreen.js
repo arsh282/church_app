@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/CustomAuthContext';
 import { createAnnouncement } from '../../controllers/AnnouncementController';
 
 export default function CreateEditAnnouncementScreen({ navigation }) {

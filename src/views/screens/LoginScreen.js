@@ -1,19 +1,20 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Image,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
-import { AuthController } from '../../controllers/AuthController';
+import { useAuth } from '../../context/CustomAuthContext';
 
 const LoginScreen = ({ navigation }) => {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,37 +28,15 @@ const LoginScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      const result = await AuthController.login(email, password);
+      const result = await login(email, password);
       console.log('Login result:', result);
       
       if (result.success) {
         // Login successful - navigation will be handled by AppNavigator based on role
-        console.log('Login successful. User role:', result.role, 'Is Admin:', result.isAdmin);
-        
-        // Show success message based on role
-        if (result.isAdmin) {
-          Alert.alert('Welcome Admin!', 'You have successfully logged in as an administrator.');
-        } else {
-          Alert.alert('Welcome!', 'You have successfully logged in as a member.');
-        }
+        console.log('Login successful');
+        Alert.alert('Welcome!', 'You have successfully logged in.');
       } else {
-        // If it's the default admin email and login failed, try to create the account
-        if (email === 'admin@admin.connectfaith.com' && password === 'admin123456') {
-          console.log('Default admin login failed, attempting to create account...');
-          try {
-            const createResult = await AuthController.createDefaultAdmin();
-            if (createResult.success) {
-              Alert.alert('Admin Created', 'Default admin account created successfully. Please try logging in again.');
-            } else {
-              Alert.alert('Login Failed', result.error);
-            }
-          } catch (createError) {
-            console.error('Error creating admin:', createError);
-            Alert.alert('Login Failed', result.error);
-          }
-        } else {
-          Alert.alert('Login Failed', result.error);
-        }
+        Alert.alert('Login Failed', result.error);
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -74,6 +53,8 @@ const LoginScreen = ({ navigation }) => {
   const handleSignUp = () => {
     navigation.navigate('SignUp');
   };
+
+
 
   return (
     <View style={styles.container}>
@@ -154,6 +135,7 @@ const LoginScreen = ({ navigation }) => {
             >
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
+
           </View>
 
           {/* Sign Up Link */}
@@ -285,6 +267,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
 });
 
 export default LoginScreen;

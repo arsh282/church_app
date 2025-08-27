@@ -14,12 +14,24 @@ module.exports = {
     assetBundlePatterns: ['**/*'],
     ios: { 
       supportsTablet: true, 
-      bundleIdentifier: 'com.connectfaith.app' 
+      bundleIdentifier: 'com.connectfaith.app',
+      infoPlist: {
+        NSAppTransportSecurity: {
+          NSAllowsArbitraryLoads: true
+        }
+      }
     },
     android: { 
-      package: 'com.connectfaith.app' 
+      package: 'com.connectfaith.app',
+      permissions: [
+        'android.permission.ACCESS_NETWORK_STATE',
+        'android.permission.INTERNET'
+      ]
     },
-    plugins: ['expo-notifications'],
+    plugins: [
+      'expo-notifications',
+      '@react-native-community/datetimepicker'
+    ],
     extra: {
       firebase: {
         apiKey: "AIzaSyDrgokfc1x-SY0zLSwQBGHebBTzRbKuupk",

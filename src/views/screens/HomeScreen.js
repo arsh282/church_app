@@ -10,7 +10,7 @@ import {
   View
 } from 'react-native';
 import { RoleIndicator, useRolePermissions } from '../../components/RoleBasedAccess';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/CustomAuthContext';
 
 const HomeScreen = ({ navigation }) => {
   const { userProfile, logout } = useAuth();

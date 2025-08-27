@@ -12,7 +12,7 @@ import {
     View
 } from 'react-native';
 import { RoleIndicator } from '../../components/RoleBasedAccess';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/CustomAuthContext';
 
 export default function ProfileSettingsScreen({ navigation }) {
   const { userProfile, logout } = useAuth();

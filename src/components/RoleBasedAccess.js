@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/CustomAuthContext';
 
 // Role descriptions for users
 export const ROLE_DESCRIPTIONS = {

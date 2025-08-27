@@ -2,7 +2,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import NetworkStatus from '../components/NetworkStatus';
+import { useAuth } from '../context/CustomAuthContext';
 
 // Auth screens
 import ForgotPasswordScreen from '../views/screens/ForgotPasswordScreen';
@@ -34,33 +35,39 @@ const AppNavigator = () => {
   console.log('🔄 AppNavigator: User authenticated:', !!user, 'Role:', userProfile?.role);
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!user ? (
-          // Auth Stack
-          <>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="SignUp" component={SignUpScreen} />
-            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-          </>
-        ) : (
-          // Main App Stack - Role-based routing
-          <>
-            {isAdmin() ? (
-              // Admin Flow
-              <Stack.Screen name="AdminFlow" component={AdminNavigator} />
-            ) : (
-              // Member Flow
-              <Stack.Screen name="MemberFlow" component={UserTabs} />
-            )}
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+    <View style={styles.container}>
+      <NetworkStatus showAlert={false} />
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {!user ? (
+            // Auth Stack
+            <>
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="SignUp" component={SignUpScreen} />
+              <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+            </>
+          ) : (
+            // Main App Stack - Role-based routing
+            <>
+              {isAdmin() ? (
+                // Admin Flow
+                <Stack.Screen name="AdminFlow" component={AdminNavigator} />
+              ) : (
+                // Member Flow
+                <Stack.Screen name="MemberFlow" component={UserTabs} />
+              )}
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

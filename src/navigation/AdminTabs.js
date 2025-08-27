@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { Alert, TouchableOpacity } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/CustomAuthContext';
 
 import AdminDashboardScreen from '../views/screens/AdminDashboardScreen';
 import DonationReportsScreen from '../views/screens/DonationReportsScreen';
