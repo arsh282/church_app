@@ -48,7 +48,7 @@ const HomeScreen = ({ navigation }) => {
       title: 'Events',
       icon: 'calendar-outline',
       color: '#6699CC',
-      screen: 'EventsCalendar',
+      screen: 'Events',
       description: 'View upcoming events'
     },
     {

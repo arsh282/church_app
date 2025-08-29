@@ -1,17 +1,17 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-  Alert,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Switch,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/CustomAuthContext';
 import { createAnnouncement } from '../../controllers/AnnouncementController';
 
@@ -60,7 +60,7 @@ export default function CreateEditAnnouncementScreen({ navigation }) {
       {/* Simple Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1F2A37" />
+          <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Create Announcement</Text>
         <View style={styles.headerRight} />
@@ -68,7 +68,6 @@ export default function CreateEditAnnouncementScreen({ navigation }) {
       
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionHeading}>Announcement Details</Text>
         <View style={styles.card}>
           <Text style={styles.label}>Title</Text>
           <TextInput
@@ -132,12 +131,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: '#6699CC',
     paddingTop: Platform.OS === 'ios' ? 50 : 20,
     paddingBottom: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    borderBottomColor: '#5B8EAD',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -148,7 +147,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2A37',
+    color: '#fff',
     flex: 1,
     textAlign: 'center',
   },

@@ -10,7 +10,17 @@ const mockRoles = [
   { id: '3', name: 'Moderator' }
 ];
 
-const mockUsers = [];
+const mockUsers = [
+  // Default admin account
+  {
+    id: 'admin-001',
+    email: 'admin@admin.connectfaith.com',
+    password: 'admin123456',
+    firstName: 'Admin',
+    lastName: 'User',
+    role: 'admin'
+  }
+];
 
 export const mockApiService = {
   // Simulate API delay
@@ -34,6 +44,11 @@ export const mockApiService = {
         throw new Error('Email and password are required');
       }
 
+      // Prevent admin email registration
+      if (userData.email.endsWith('@admin.connectfaith.com')) {
+        throw new Error('Admin emails cannot be registered through this form');
+      }
+
       // Check if user already exists
       const existingUser = mockUsers.find(user => user.email === userData.email);
       if (existingUser) {
@@ -51,12 +66,14 @@ export const mockApiService = {
       mockUsers.push(newUser);
       
       const response = await mockApiService.simulateApiCall({
-        id: newUser.id,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        email: newUser.email,
-        role: 'Member',
-        createdAt: newUser.createdAt
+        user: {
+          id: newUser.id,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          email: newUser.email,
+          role: 'Member'
+        },
+        token: `mock_token_${Date.now()}`
       });
 
       return { success: true, data: response };
@@ -93,7 +110,7 @@ export const mockApiService = {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          role: 'Member'
+          role: user.role || 'Member'
         },
         token: `mock_token_${Date.now()}`
       });
@@ -213,6 +230,173 @@ export const mockApiService = {
       return { success: true, data: response };
     } catch (error) {
       console.log('🎭 Mock API: Reset password failed:', error.message);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Mock event categories
+  getEventCategories: async (token) => {
+    try {
+      console.log('🎭 Mock API: Getting event categories');
+      
+      const categories = [
+        { id: '1', name: 'Worship Service' },
+        { id: '2', name: 'Bible Study' },
+        { id: '3', name: 'Youth Ministry' },
+        { id: '4', name: 'Community Outreach' },
+        { id: '5', name: 'Fellowship' },
+        { id: '6', name: 'Mission Trip' },
+      ];
+      
+      const response = await mockApiService.simulateApiCall(categories);
+      return { success: true, data: response };
+    } catch (error) {
+      console.log('🎭 Mock API: Get event categories failed:', error.message);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Mock create event
+  createEvent: async (eventData, token) => {
+    try {
+      console.log('🎭 Mock API: Creating event:', eventData);
+      
+      // Simulate validation
+      if (!eventData.name) {
+        throw new Error('Event name is required');
+      }
+      if (!eventData.categoryId) {
+        throw new Error('Event category is required');
+      }
+      if (!eventData.startTime || !eventData.endTime) {
+        throw new Error('Start time and end time are required');
+      }
+
+      // Create mock event
+      const newEvent = {
+        id: `event_${Date.now()}`,
+        ...eventData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      const response = await mockApiService.simulateApiCall({
+        event: newEvent,
+        message: 'Event created successfully'
+      });
+
+      return { success: true, data: response };
+    } catch (error) {
+      console.log('🎭 Mock API: Create event failed:', error.message);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Mock update event
+  updateEvent: async (eventId, eventData, token) => {
+    try {
+      console.log('🎭 Mock API: Updating event:', eventId, eventData);
+      
+      const response = await mockApiService.simulateApiCall({
+        event: {
+          id: eventId,
+          ...eventData,
+          updatedAt: new Date().toISOString()
+        },
+        message: 'Event updated successfully'
+      });
+
+      return { success: true, data: response };
+    } catch (error) {
+      console.log('🎭 Mock API: Update event failed:', error.message);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Mock delete event
+  deleteEvent: async (eventId, token) => {
+    try {
+      console.log('🎭 Mock API: Deleting event:', eventId);
+      
+      const response = await mockApiService.simulateApiCall({
+        message: 'Event deleted successfully'
+      });
+
+      return { success: true, data: response };
+    } catch (error) {
+      console.log('🎭 Mock API: Delete event failed:', error.message);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Mock get events
+  getEvents: async (token, filters = {}) => {
+    try {
+      console.log('🎭 Mock API: Getting events with filters:', filters);
+      
+      const mockEvents = [
+        {
+          id: 'event_1',
+          name: 'Sunday Worship Service',
+          description: 'Join us for our weekly worship service',
+          categoryId: '1',
+          startTime: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+          endTime: new Date(Date.now() + 86400000 + 7200000).toISOString(), // Tomorrow + 2 hours
+          location: 'Main Sanctuary',
+          imageUrl: null,
+          status: 'UPCOMING',
+          maxAttendees: 200,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'event_2',
+          name: 'Bible Study Group',
+          description: 'Weekly bible study for adults',
+          categoryId: '2',
+          startTime: new Date(Date.now() + 172800000).toISOString(), // Day after tomorrow
+          endTime: new Date(Date.now() + 172800000 + 3600000).toISOString(), // Day after tomorrow + 1 hour
+          location: 'Fellowship Hall',
+          imageUrl: null,
+          status: 'UPCOMING',
+          maxAttendees: 50,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
+      
+      const response = await mockApiService.simulateApiCall(mockEvents);
+      return { success: true, data: response };
+    } catch (error) {
+      console.log('🎭 Mock API: Get events failed:', error.message);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Mock get event details
+  getEventDetails: async (eventId, token) => {
+    try {
+      console.log('🎭 Mock API: Getting event details:', eventId);
+      
+      const mockEvent = {
+        id: eventId,
+        name: 'Sample Event',
+        description: 'This is a sample event description',
+        categoryId: '1',
+        startTime: new Date(Date.now() + 86400000).toISOString(),
+        endTime: new Date(Date.now() + 86400000 + 7200000).toISOString(),
+        location: 'Main Sanctuary',
+        imageUrl: null,
+        status: 'UPCOMING',
+        maxAttendees: 200,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      const response = await mockApiService.simulateApiCall(mockEvent);
+      return { success: true, data: response };
+    } catch (error) {
+      console.log('🎭 Mock API: Get event details failed:', error.message);
       return { success: false, error: error.message };
     }
   }

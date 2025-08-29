@@ -21,7 +21,7 @@ const Stack = createNativeStackNavigator();
 const AppNavigator = () => {
   const { user, userProfile, loading, isAdmin } = useAuth();
 
-  console.log('🔄 AppNavigator: Current state - user:', user?.uid, 'loading:', loading, 'isAdmin:', isAdmin());
+  console.log('🔄 AppNavigator: Current state - user:', user?.id || user?.uid, 'loading:', loading, 'isAdmin:', isAdmin());
 
   if (loading) {
     console.log('🔄 AppNavigator: Showing loading screen');
@@ -32,14 +32,14 @@ const AppNavigator = () => {
     );
   }
 
-  console.log('🔄 AppNavigator: User authenticated:', !!user, 'Role:', userProfile?.role);
+  console.log('🔄 AppNavigator: User authenticated:', !!(user?.id || user?.uid), 'Role:', userProfile?.role);
 
   return (
     <View style={styles.container}>
       <NetworkStatus showAlert={false} />
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {!user ? (
+          {!(user?.id || user?.uid) ? (
             // Auth Stack
             <>
               <Stack.Screen name="Login" component={LoginScreen} />

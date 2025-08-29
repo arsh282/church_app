@@ -13,12 +13,23 @@ import AdminTabs from './AdminTabs';
 const Stack = createNativeStackNavigator();
 export default function AdminNavigator() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#6699CC',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: '600',
+          fontSize: 18,
+        },
+      }}
+    >
       {/* Bottom tabs as the primary admin shell */}
       <Stack.Screen name="AdminTabs" component={AdminTabs} options={{ headerShown: false }} />
       {/* Task/detail screens presented over tabs */}
       <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Admin' }} />
-      <Stack.Screen name="CreateAnnouncement" component={CreateEditAnnouncementScreen} />
+      <Stack.Screen name="CreateAnnouncement" component={CreateEditAnnouncementScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CreateEvent" component={CreateEditEventScreen} />
       <Stack.Screen name="EventRegistrations" component={EventRegistrationsScreen} />
       <Stack.Screen name="UploadSermon" component={UploadEditSermonScreen} />

@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import { Platform } from 'react-native';
 
 import AnnouncementsScreen from '../views/screens/AnnouncementsScreen';
 import ChatScreen from '../views/screens/ChatScreen';
@@ -27,7 +28,6 @@ function HomeStack() {
     >
       <Stack.Screen name="HomeMain" component={HomeScreen} />
       <Stack.Screen name="Notifications" component={NotificationCenterScreen} />
-      <Stack.Screen name="Profile" component={ProfileSettingsScreen} />
       <Stack.Screen name="Announcements" component={AnnouncementsScreen} />
       <Stack.Screen name="Donations" component={DonationsScreen} />
       <Stack.Screen name="Events" component={EventsCalendarScreen} />
@@ -68,9 +68,9 @@ export default function UserTabs() {
           backgroundColor: '#fff',
           borderTopWidth: 1,
           borderTopColor: '#E0E0E0',
-          paddingTop: 8,
-          paddingBottom: 8,
-          height: 80,
+          paddingTop: Platform.OS === 'ios' ? 8 : 8,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+          height: Platform.OS === 'ios' ? 90 : 80,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,

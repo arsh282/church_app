@@ -11,7 +11,9 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+
 import { useAuth } from '../../context/CustomAuthContext';
+import { validateEmail } from '../../utils/passwordValidation';
 
 const LoginScreen = ({ navigation }) => {
   const { login } = useAuth();
@@ -23,6 +25,11 @@ const LoginScreen = ({ navigation }) => {
     console.log('Login button pressed');
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
       return;
     }
 
@@ -69,7 +76,7 @@ const LoginScreen = ({ navigation }) => {
       
       {/* Overlay */}
       <LinearGradient
-        colors={['rgba(102, 153, 204, 0.7)', 'rgba(102, 153, 204, 0.9)']}
+        colors={['rgba(25, 118, 210, 0.6)', 'rgba(21, 101, 192, 0.8)']}
         style={styles.overlay}
       >
         <View style={styles.content}>
@@ -145,6 +152,8 @@ const LoginScreen = ({ navigation }) => {
               <Text style={styles.signUpLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>
+
+
         </View>
       </LinearGradient>
     </View>
@@ -190,7 +199,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#6699CC',
+    color: '#fff',
     textAlign: 'center',
   },
   formContainer: {

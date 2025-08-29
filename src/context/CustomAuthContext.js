@@ -37,9 +37,12 @@ export const CustomAuthProvider = ({ children }) => {
 
       if (storedToken && storedUser) {
         const userData = JSON.parse(storedUser);
-        const profileData = storedProfile ? JSON.parse(storedProfile) : null;
+        const profileData = storedProfile ? JSON.parse(storedProfile) : userData;
         
         console.log('✅ CustomAuthContext: Found stored auth data');
+        console.log('🔍 CustomAuthContext: Stored user data:', userData);
+        console.log('🔍 CustomAuthContext: Stored profile data:', profileData);
+        
         setToken(storedToken);
         setUser(userData);
         setUserProfile(profileData);
@@ -82,6 +85,8 @@ export const CustomAuthProvider = ({ children }) => {
         setUserProfile({ ...userData, role: userData.role || 'Member' });
         
         console.log('✅ CustomAuthContext: Login successful');
+        console.log('🔍 CustomAuthContext: User role:', userData.role);
+        console.log('🔍 CustomAuthContext: Is admin?', userData.role === 'admin' || userData.role === 'Admin');
         return { success: true };
       } else {
         console.log('❌ CustomAuthContext: Login failed:', result.error);
@@ -103,6 +108,32 @@ export const CustomAuthProvider = ({ children }) => {
 
       if (result.success) {
         console.log('✅ CustomAuthContext: Registration successful');
+        
+        // Automatically log the user in after successful registration
+        const { user: userData, token: authToken } = result.data;
+        
+        console.log('🔍 CustomAuthContext: Registration response data:', result.data);
+        console.log('🔍 CustomAuthContext: User data:', userData);
+        console.log('🔍 CustomAuthContext: Auth token:', authToken);
+        
+        // Validate that we have the required data
+        if (!authToken || !userData) {
+          console.error('❌ CustomAuthContext: Missing auth data from registration response');
+          return { success: false, error: 'Invalid response from server' };
+        }
+        
+        // Store authentication data
+        await AsyncStorage.setItem('authToken', authToken);
+        await AsyncStorage.setItem('authUser', JSON.stringify(userData));
+        
+        // Set state to log user in
+        setToken(authToken);
+        setUser(userData);
+        setUserProfile({ ...userData, role: userData.role || 'Member' });
+        
+        console.log('✅ CustomAuthContext: User automatically logged in after registration');
+        console.log('✅ CustomAuthContext: User state set:', userData);
+        console.log('✅ CustomAuthContext: User profile set:', { ...userData, role: userData.role || 'Member' });
         return { success: true, data: result.data };
       } else {
         console.log('❌ CustomAuthContext: Registration failed:', result.error);

@@ -178,4 +178,99 @@ export const apiService = {
       return { success: false, error: error.message };
     }
   },
+
+  // Create event
+  createEvent: async (eventData, token) => {
+    try {
+      const response = await apiService.makeRequest(API_CONFIG.ENDPOINTS.CREATE_EVENT, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(eventData),
+      });
+      return { success: true, data: response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Update event
+  updateEvent: async (eventId, eventData, token) => {
+    try {
+      const response = await apiService.makeRequest(API_CONFIG.ENDPOINTS.UPDATE_EVENT, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(eventData),
+      }, { id: eventId });
+      return { success: true, data: response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Delete event
+  deleteEvent: async (eventId, token) => {
+    try {
+      const response = await apiService.makeRequest(API_CONFIG.ENDPOINTS.DELETE_EVENT, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }, { id: eventId });
+      return { success: true, data: response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Get event categories
+  getEventCategories: async (token) => {
+    try {
+      const response = await apiService.makeRequest(API_CONFIG.ENDPOINTS.EVENT_CATEGORIES, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      return { success: true, data: response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Get events
+  getEvents: async (token, filters = {}) => {
+    try {
+      const queryParams = new URLSearchParams(filters).toString();
+      const endpoint = queryParams ? `${API_CONFIG.ENDPOINTS.EVENTS}?${queryParams}` : API_CONFIG.ENDPOINTS.EVENTS;
+      
+      const response = await apiService.makeRequest(endpoint, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      return { success: true, data: response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Get event details
+  getEventDetails: async (eventId, token) => {
+    try {
+      const response = await apiService.makeRequest(API_CONFIG.ENDPOINTS.EVENT_DETAILS, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }, { id: eventId });
+      return { success: true, data: response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
 };

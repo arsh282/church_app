@@ -17,7 +17,7 @@ import { useAuth } from '../../context/CustomAuthContext';
 export default function ProfileSettingsScreen({ navigation }) {
   const { userProfile, logout } = useAuth();
 
-  const userName = userProfile?.fullName || 'Member';
+  const userName = userProfile?.fullName || (userProfile?.role === 'admin' ? 'Admin' : 'Member');
   const userEmail = userProfile?.email || 'member@example.com';
   const userRole = userProfile?.role || 'user';
 
@@ -62,6 +62,14 @@ export default function ProfileSettingsScreen({ navigation }) {
     Alert.alert('About', 'ConnectFaith Church App\nVersion 1.0.0\n\nA community app for church members to stay connected.');
   };
 
+  const handleAdminSettings = () => {
+    Alert.alert('Admin Settings', 'Advanced admin settings coming soon!');
+  };
+
+  const handleSystemLogs = () => {
+    Alert.alert('System Logs', 'System logs and analytics coming soon!');
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#6699CC" />
@@ -72,13 +80,8 @@ export default function ProfileSettingsScreen({ navigation }) {
         style={styles.header}
       >
         <View style={styles.headerContent}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profile</Text>
+          <View style={styles.backButton} />
+          <Text style={styles.headerTitle}>{userRole === 'admin' ? 'Admin Profile' : 'Profile'}</Text>
           <View style={styles.headerRight} />
         </View>
       </LinearGradient>
@@ -143,6 +146,41 @@ export default function ProfileSettingsScreen({ navigation }) {
             <Ionicons name="chevron-forward" size={20} color="#ccc" />
           </TouchableOpacity>
         </View>
+
+        {/* Admin-specific sections */}
+        {userRole === 'admin' && (
+          <>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Admin Tools</Text>
+              
+              <TouchableOpacity style={styles.optionItem} onPress={handleAdminSettings}>
+                <View style={styles.optionLeft}>
+                  <View style={[styles.optionIcon, { backgroundColor: '#FF6B35' + '20' }]}>
+                    <Ionicons name="settings-outline" size={24} color="#FF6B35" />
+                  </View>
+                  <View style={styles.optionTextContainer}>
+                    <Text style={styles.optionText}>Admin Settings</Text>
+                    <Text style={styles.optionSubtext}>Advanced system configuration</Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#ccc" />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.optionItem} onPress={handleSystemLogs}>
+                <View style={styles.optionLeft}>
+                  <View style={[styles.optionIcon, { backgroundColor: '#4ECDC4' + '20' }]}>
+                    <Ionicons name="analytics-outline" size={24} color="#4ECDC4" />
+                  </View>
+                  <View style={styles.optionTextContainer}>
+                    <Text style={styles.optionText}>System Logs</Text>
+                    <Text style={styles.optionSubtext}>View system logs and analytics</Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#ccc" />
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Support & Information</Text>

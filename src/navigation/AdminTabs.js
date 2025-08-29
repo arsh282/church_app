@@ -1,48 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
-import { Alert, TouchableOpacity } from 'react-native';
-import { useAuth } from '../context/CustomAuthContext';
+import { Platform } from 'react-native';
 
 import AdminDashboardScreen from '../views/screens/AdminDashboardScreen';
 import DonationReportsScreen from '../views/screens/DonationReportsScreen';
 import EventRegistrationsScreen from '../views/screens/EventRegistrationsScreen';
 import ModerationCenterScreen from '../views/screens/ModerationCenterScreen';
+import ProfileSettingsScreen from '../views/screens/ProfileSettingsScreen';
 import UserManagementScreen from '../views/screens/UserManagementScreen';
 
 const Tab = createBottomTabNavigator();
 
 export default function AdminTabs() {
-  const { logout } = useAuth();
 
-  const handleLogout = async () => {
-    
 
-    try {
-      await logout();
-      
-      // Navigation will be handled by AppNavigator based on auth state
-    } catch (error) {
-      
-      Alert.alert('Error', 'Failed to logout. Please try again.');
-    }
-  };
-
-  const LogoutButton = () => (
-    <TouchableOpacity
-      onPress={handleLogout}
-      style={{
-        marginRight: 15,
-        padding: 8,
-        borderRadius: 6,
-        backgroundColor: '#FFF5F5',
-        borderWidth: 1,
-        borderColor: '#FECACA',
-      }}
-    >
-      <Ionicons name="log-out-outline" size={20} color="#FF6B6B" />
-    </TouchableOpacity>
-  );
 
   return (
     <Tab.Navigator
@@ -59,30 +31,39 @@ export default function AdminTabs() {
             iconName = focused ? 'shield-checkmark' : 'shield-checkmark-outline';
           } else if (route.name === 'EventRegistrations') {
             iconName = focused ? 'checkbox' : 'checkbox-outline';
+          } else if (route.name === 'Profile') {
+            iconName = focused ? 'person' : 'person-outline';
           }
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         headerShown: true,
-        headerRight: () => <LogoutButton />,
-        tabBarActiveTintColor: '#FFD700',
-        tabBarInactiveTintColor: '#4ECDC4',
+        headerStyle: {
+          backgroundColor: '#6699CC',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: '600',
+          fontSize: 18,
+        },
+        tabBarActiveTintColor: '#6699CC',
+        tabBarInactiveTintColor: '#999999',
         tabBarStyle: {
           backgroundColor: '#fff',
           borderTopWidth: 1,
-          borderTopColor: '#e9ecef',
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
+          borderTopColor: '#E0E0E0',
+          paddingTop: Platform.OS === 'ios' ? 8 : 8,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+          height: Platform.OS === 'ios' ? 90 : 80,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
-          shadowRadius: 4,
-          elevation: 8,
+          shadowRadius: 8,
+          elevation: 10,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '500',
-          marginTop: 2,
+          marginTop: 4,
         },
       })}
     >
@@ -110,6 +91,15 @@ export default function AdminTabs() {
         name="EventRegistrations"
         component={EventRegistrationsScreen}
         options={{ tabBarLabel: 'Registrations', title: 'Event Registrations' }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileSettingsScreen}
+        options={{ 
+          tabBarLabel: 'Profile', 
+          title: 'Admin Profile',
+          headerShown: false 
+        }}
       />
     </Tab.Navigator>
   );

@@ -13,46 +13,61 @@ const firebaseAuth = getAuth();
 // @desc    Register a new user
 // @access  Public
 router.post('/register', [
-  body('email', 'Please include a valid email').isEmail(),
-  body('password', 'Password must be 6 or more characters').isLength({ min: 6 }),
-  body('firstName', 'First name is required').notEmpty(),
-  body('lastName', 'Last name is required').notEmpty()
+  body('email', 'Please include a valid email')
+    .isEmail()
+    .normalizeEmail()
+    .isLength({ max: 254 }),
+  body('password', 'Password is required')
+    .isLength({ min: 8, max: 128 })
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/, 'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character'),
+  body('firstName', 'First name is required').notEmpty().trim().isLength({ min: 1, max: 50 }),
+  body('lastName', 'Last name is required').notEmpty().trim().isLength({ min: 1, max: 50 })
 ], async (req, res) => {
   try {
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ 
+        message: 'Validation failed',
+        errors: errors.array() 
+      });
     }
 
-    const { email, password, firstName, lastName, phone } = req.body;
+    const { email, password, firstName, lastName, phone, ...otherData } = req.body;
+
+    // Prevent admin email registration
+    if (email.endsWith('@admin.connectfaith.com')) {
+      return res.status(400).json({ message: 'Admin emails cannot be registered through this form' });
+    }
 
     // Check if user already exists
     try {
       const userRecord = await firebaseAuth.getUserByEmail(email);
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'User already exists with this email address' });
     } catch (error) {
       // User doesn't exist, continue with registration
     }
 
-    // Create user in Firebase Auth
+    // Create user in Firebase Auth (Firebase handles password hashing internally)
     const userRecord = await firebaseAuth.createUser({
       email,
-      password,
+      password, // Firebase will handle the hashing and salting internally
       displayName: `${firstName} ${lastName}`,
-      phoneNumber: phone
+      phoneNumber: phone || null
     });
 
     // Create user profile in Firestore
     const userProfile = {
       uid: userRecord.uid,
-      email,
-      firstName,
-      lastName,
+      email: email.toLowerCase(),
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
       phone: phone || null,
       role: 'user',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      // Store additional user data if provided
+      ...otherData
     };
 
     await db.collection('users').doc(userRecord.uid).set(userProfile);
@@ -94,56 +109,76 @@ router.post('/register', [
 // @desc    Authenticate user & get token
 // @access  Public
 router.post('/login', [
-  body('email', 'Please include a valid email').isEmail(),
-  body('password', 'Password is required').exists()
+  body('email', 'Please include a valid email')
+    .isEmail()
+    .normalizeEmail(),
+  body('password', 'Password is required')
+    .isLength({ min: 1 })
 ], async (req, res) => {
   try {
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ 
+        message: 'Validation failed',
+        errors: errors.array() 
+      });
     }
 
     const { email, password } = req.body;
 
-    // Verify user exists and get user record
-    const userRecord = await firebaseAuth.getUserByEmail(email);
+    try {
+      // Verify user exists and get user record
+      const userRecord = await firebaseAuth.getUserByEmail(email);
 
-    // Get user profile from Firestore
-    const userDoc = await db.collection('users').doc(userRecord.uid).get();
-    if (!userDoc.exists) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      // Get user profile from Firestore
+      const userDoc = await db.collection('users').doc(userRecord.uid).get();
+      if (!userDoc.exists) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      const userProfile = userDoc.data();
+
+      // Create JWT token
+      const payload = {
+        user: {
+          id: userRecord.uid,
+          email: userRecord.email,
+          role: userProfile.role
+        }
+      };
+
+      jwt.sign(
+        payload,
+        process.env.JWT_SECRET || 'your-secret-key',
+        { expiresIn: '7d' },
+        (err, token) => {
+          if (err) throw err;
+          res.json({
+            token,
+            user: {
+              id: userRecord.uid,
+              email: userRecord.email,
+              firstName: userProfile.firstName,
+              lastName: userProfile.lastName,
+              role: userProfile.role
+            }
+          });
+        }
+      );
+    } catch (firebaseError) {
+      // Handle Firebase Auth errors
+      if (firebaseError.code === 'auth/user-not-found') {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      } else if (firebaseError.code === 'auth/wrong-password') {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      } else if (firebaseError.code === 'auth/too-many-requests') {
+        return res.status(429).json({ message: 'Too many failed login attempts. Please try again later.' });
+      } else {
+        console.error('Firebase Auth error:', firebaseError);
+        return res.status(500).json({ message: 'Authentication error' });
+      }
     }
-
-    const userProfile = userDoc.data();
-
-    // Create JWT token
-    const payload = {
-      user: {
-        id: userRecord.uid,
-        email: userRecord.email,
-        role: userProfile.role
-      }
-    };
-
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' },
-      (err, token) => {
-        if (err) throw err;
-        res.json({
-          token,
-          user: {
-            id: userRecord.uid,
-            email: userRecord.email,
-            firstName: userProfile.firstName,
-            lastName: userProfile.lastName,
-            role: userProfile.role
-          }
-        });
-      }
-    );
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error during login' });

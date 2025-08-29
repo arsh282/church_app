@@ -16,6 +16,7 @@ import {
   View
 } from 'react-native';
 import { useAuth } from '../../context/CustomAuthContext';
+import { getPasswordRequirements, validateEmail, validatePassword } from '../../utils/passwordValidation';
 
 const SignUpScreen = ({ navigation }) => {
   const { register } = useAuth();
@@ -118,23 +119,37 @@ const SignUpScreen = ({ navigation }) => {
   const validateStep3 = () => {
     const newErrors = {};
     
-    if (!password) newErrors.password = 'Password is required';
-    else if (password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else {
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        newErrors.password = passwordValidation.errors[0]; // Show first error
+      }
+    }
     
-    if (!confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
-    else if (password !== confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const isValidEmail = (email) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    return validateEmail(email);
   };
 
   const isValidPhone = (phone) => {
     return /^[\+]?[1-9][\d]{0,15}$/.test(phone.replace(/\s/g, ''));
   };
+
+  // Get password strength and requirements
+  const passwordValidation = validatePassword(password);
+  const passwordStrength = passwordValidation.strength;
+  const requirements = getPasswordRequirements(password);
 
   // Date picker handlers
   const showDatePickerModal = () => {
@@ -195,17 +210,12 @@ const SignUpScreen = ({ navigation }) => {
       const result = await register(userData);
 
       if (result.success) {
-        Alert.alert(
-          'Success',
-          'Account created successfully! Please sign in with your new credentials.',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.navigate('Login')
-            }
-          ]
-        );
+        // User is automatically logged in and redirected by AppNavigator
+        // No need for manual navigation or alert
+        console.log('✅ SignUpScreen: Registration successful, user automatically logged in');
+        console.log('✅ SignUpScreen: Result data:', result.data);
       } else {
+        console.log('❌ SignUpScreen: Registration failed:', result.error);
         Alert.alert('Registration Failed', result.error);
       }
     } catch (error) {
@@ -419,6 +429,46 @@ const SignUpScreen = ({ navigation }) => {
         autoCorrect={false}
       />
       {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+      
+      {/* Password Strength Indicator */}
+      {password && (
+        <View style={styles.passwordStrengthContainer}>
+          <View style={styles.strengthBar}>
+            <View 
+              style={[
+                styles.strengthFill, 
+                { 
+                  width: `${(passwordStrength.score / 5) * 100}%`,
+                  backgroundColor: passwordStrength.color 
+                }
+              ]} 
+            />
+          </View>
+          <Text style={[styles.strengthText, { color: passwordStrength.color }]}>
+            {passwordStrength.label}
+          </Text>
+        </View>
+      )}
+      
+      {/* Password Requirements */}
+      <View style={styles.requirementsContainer}>
+        <Text style={styles.requirementsTitle}>Password Requirements:</Text>
+        <Text style={[styles.requirement, requirements.length && styles.requirementMet]}>
+          • At least 8 characters long
+        </Text>
+        <Text style={[styles.requirement, requirements.lowercase && styles.requirementMet]}>
+          • At least one lowercase letter
+        </Text>
+        <Text style={[styles.requirement, requirements.uppercase && styles.requirementMet]}>
+          • At least one uppercase letter
+        </Text>
+        <Text style={[styles.requirement, requirements.number && styles.requirementMet]}>
+          • At least one number
+        </Text>
+        <Text style={[styles.requirement, requirements.special && styles.requirementMet]}>
+          • At least one special character
+        </Text>
+      </View>
 
       <TextInput
         style={[styles.input, errors.confirmPassword && styles.inputError]}
@@ -448,20 +498,14 @@ const SignUpScreen = ({ navigation }) => {
       />
       
       <LinearGradient
-        colors={['rgba(102, 153, 204, 0.7)', 'rgba(102, 153, 204, 0.9)']}
+        colors={['rgba(25, 118, 210, 0.6)', 'rgba(21, 101, 192, 0.8)']}
         style={styles.overlay}
       >
         <View style={styles.content}>
-          {/* Logo */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoCircle}>
-              <Image
-                source={require('../../../assets/images/connectfaith-logo.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={styles.logoText}>ConnectFaith</Text>
+          {/* Create Account Message */}
+          <View style={styles.createAccountContainer}>
+            <Text style={styles.createAccountTitle}>Create Account</Text>
+            <Text style={styles.createAccountSubtitle}>Join our church community</Text>
           </View>
 
           {/* Progress Indicator */}
@@ -479,8 +523,7 @@ const SignUpScreen = ({ navigation }) => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <Text style={styles.signUpTitle}>Create Account</Text>
-            <Text style={styles.signUpSubtitle}>Join our church community</Text>
+
 
             {currentStep === 1 && renderStep1()}
             {currentStep === 2 && renderStep2()}
@@ -529,6 +572,9 @@ const SignUpScreen = ({ navigation }) => {
               <Text style={styles.loginLink}>Sign In</Text>
             </TouchableOpacity>
           </View>
+          
+          {/* Spacer */}
+          <View style={styles.spacer} />
         </View>
       </LinearGradient>
 
@@ -576,35 +622,28 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
+    paddingTop: 10,
+    justifyContent: 'flex-start',
   },
-  logoContainer: {
+  createAccountContainer: {
     alignItems: 'center',
     marginTop: 40,
-    marginBottom: 20,
+    marginBottom: 15,
   },
-  logoCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 204, 0, 0.3)',
-  },
-  logo: {
-    width: 50,
-    height: 50,
-  },
-  logoText: {
-    fontSize: 20,
+  createAccountTitle: {
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#6699CC',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  createAccountSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
   },
   progressContainer: {
-    marginBottom: 20,
+    marginBottom: 15,
   },
   progressBar: {
     height: 4,
@@ -625,7 +664,7 @@ const styles = StyleSheet.create({
   formContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 20,
-    marginBottom: 20,
+    marginBottom: 0,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -634,24 +673,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
+    maxHeight: '70%',
   },
   formContentContainer: {
     padding: 25,
-    paddingBottom: 40,
+    paddingBottom: 35,
   },
-  signUpTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#6699CC',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  signUpSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 25,
-  },
+
   stepTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -737,7 +765,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 0,
+    marginTop: 'auto',
+    paddingBottom: 20,
+  },
+  spacer: {
+    height: 20,
   },
   loginText: {
     color: '#fff',
@@ -776,6 +809,50 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#666',
     fontWeight: 'bold',
+  },
+  // Password strength indicator styles
+  passwordStrengthContainer: {
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  strengthBar: {
+    height: 4,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 2,
+    marginBottom: 4,
+  },
+  strengthFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  strengthText: {
+    fontSize: 12,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  requirementsContainer: {
+    marginTop: 8,
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  requirementsTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#666',
+    marginBottom: 6,
+  },
+  requirement: {
+    fontSize: 11,
+    color: '#999',
+    marginBottom: 2,
+  },
+  requirementMet: {
+    color: '#00AA00',
+    fontWeight: '500',
   },
 });
 

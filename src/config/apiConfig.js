@@ -25,6 +25,10 @@ export const API_CONFIG = {
     // Event endpoints
     EVENTS: '/events',
     EVENT_DETAILS: '/events/:id',
+    CREATE_EVENT: '/events',
+    UPDATE_EVENT: '/events/:id',
+    DELETE_EVENT: '/events/:id',
+    EVENT_CATEGORIES: '/events/categories',
     
     // Announcement endpoints
     ANNOUNCEMENTS: '/announcements',
